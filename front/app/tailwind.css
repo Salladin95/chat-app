@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+        @apply flex flex-col min-h-[100svh] text-sm;
+    }
+
+    body {
+        @apply flex-1 flex flex-col scroll-smooth text-black font-montserrat;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"] {
+        appearance: none;
+    }
+}
+
+@layer components {
+    .separator {
+        @apply relative;
+
+        &::after {
+            @apply content-[''] absolute -bottom-[1rem] left-0 w-full h-[1px] bg-primary;
+        }
+    }
+}
+
+@layer utilities {
+    .scale-4 {
+        transform: scale(4);
+    }
+
+    .disabled {
+        @apply opacity-80 pointer-events-none;
+    }
+
+    .gray-border {
+        @apply border border-gray-200 focus-within:border-gray-300 hover:border-gray-300;
+    }
+
+    .click-scale {
+        @apply active:transition-[transform] active:scale-click;
+    }
+
+    .hover-scale {
+        @apply hover:transition-[transform] hover:scale-click;
+    }
+
+    .hide-scrollbar {
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    .full-size {
+        @apply w-full h-full;
+    }
+
+    .absolute-size {
+        @apply absolute w-full h-full inset-0;
+    }
+
+    .fixed-size {
+        @apply fixed w-full h-full inset-0;
+    }
+
+    .fixed-center {
+        @apply fixed top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2;
+    }
+
+    .absolute-center {
+        @apply absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2;
+    }
+
+    .absolute-x-center {
+        @apply absolute left-1/2 transform -translate-x-1/2;
+    }
+
+    .absolute-y-center {
+        @apply absolute top-1/2 transform -translate-y-1/2;
+    }
+
+    .flex-center {
+        @apply flex items-center justify-center;
+    }
+
+    .flex-col-center {
+        @apply flex-center flex-col;
+    }
+
+    .flex-cb {
+        @apply flex items-center justify-between;
+    }
+}
