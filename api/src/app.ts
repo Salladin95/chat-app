@@ -1,4 +1,3 @@
-import Joi from 'joi';
 import path from 'path';
 import http from 'http';
 import dotenv from 'dotenv';
@@ -9,26 +8,10 @@ import cookieParser from 'cookie-parser';
 import router from './routes';
 import { handleError } from './helpers';
 import { httpLogger } from './middlewares';
-import { connectToDb } from './utils';
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
-export const mySqlConfigSchema = Joi.object({
-  DB_HOST: Joi.string().required(),
-  MYSQL_ROOT_PASSWORD: Joi.string().required(),
-  MYSQL_DATABASE: Joi.string().required(),
-  MYSQL_USER: Joi.string().required(),
-  DB_PORT: Joi.string().required(),
-});
-
 const app: express.Application = express();
-const uri = process.env.DB_URL;
-if (uri) {
-  connectToDb(uri);
-} else {
-  console.error('DB URI IS MISSING');
-  process.exit(1);
-}
 
 app.use(httpLogger);
 app.use(express.json());

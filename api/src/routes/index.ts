@@ -1,40 +1,35 @@
-import Joi from 'joi';
+import path from 'path';
+import dotenv from 'dotenv';
 import express from 'express';
-import { upload } from '../utils';
+import { connectToDb, upload } from '../utils';
+import { createUserHandlers } from '../handlers';
+import { createUserRepo } from '../repositories';
+import { userValidationMid, validateUUIDMid } from '../middlewares';
+
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const router = express.Router();
 
 /* GET home page. */
 router.get('/', (_req: express.Request, res: express.Response) => res.send('hello there'));
 
-const userSchema = Joi.object({
-  username: Joi.string().min(1).required(),
-  password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
-  repeatPassword: Joi.ref('password'),
-  email: Joi.string().email().required(),
-  avatar: Joi.string(),
-}).with('password', 'repeatPassword'); //Ensures that if a password is provided, repeat_password must also be present.
+const uri = process.env.DB_URL;
+(async function () {
+  if (uri) {
+    const db = await connectToDb(uri);
+    const userRepo = createUserRepo(db);
+    const userHandlers = createUserHandlers(userRepo);
 
-export type SignUpDto = {
-  username: string;
-  password: string;
-  repeatPassword: string;
-  email: string;
-  avatar?: Express.Multer.File;
-};
-
-router.post('/sign-up', upload.single('avatar'), (request: express.Request, res: express.Response) => {
-  try {
-    const dto = { ...request.body, avatar: request.file?.path };
-    const { error } = userSchema.validate(dto);
-
-    if (error) return res.status(400).json({ message: error.details[0].message });
-
-    res.status(201).json({ message: 'User has been validated successfully', dto });
-  } catch (error) {
-    console.error('Error during signup:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    router.post('/sign-up', userValidationMid, upload.single('avatar'), userHandlers.signUp);
+    // TODO: NEED TO MAKE ADDITIONAL ADJUSTMENTS
+    router.patch('/user', userValidationMid, upload.single('avatar'), userHandlers.updateUser);
+    router.get('/user', userHandlers.getUsers);
+    router.get('/user/:id', validateUUIDMid, userHandlers.getUser);
+    router.delete('/user/:id', validateUUIDMid, userHandlers.getUser);
+  } else {
+    console.error('process.env.DB_URL IS MISSING');
+    process.exit(1);
   }
-});
+})();
 
 export default router;
