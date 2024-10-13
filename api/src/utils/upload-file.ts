@@ -1,11 +1,21 @@
 import path from 'path';
 import multer from 'multer';
+import fs from 'fs/promises';
 import express from 'express';
 
 // Настраиваем директорию для сохранения аватаров
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, 'uploads/avatars/'); // Директория для загрузки
+  destination: async (_req, _file, cb) => {
+    const dir = 'uploads/avatars/';
+    try {
+      // Проверяем, существует ли директория
+      await fs.access(dir);
+    } catch {
+      // Если директория не существует, создаем ее
+      await fs.mkdir(dir, { recursive: true });
+    }
+
+    cb(null, dir); // Директория готова для загрузки
   },
   filename: (_req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`); // Уникальное имя файла
