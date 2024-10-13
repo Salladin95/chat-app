@@ -9,7 +9,7 @@ import cookieParser from 'cookie-parser';
 import router from './routes';
 import { handleError } from './helpers';
 import { httpLogger } from './middlewares';
-import { ConnectionOptions, connectToDb } from './utils';
+import { connectToDb } from './utils';
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
@@ -21,22 +21,14 @@ export const mySqlConfigSchema = Joi.object({
   DB_PORT: Joi.string().required(),
 });
 
-const { error: mySqlConfigErr } = mySqlConfigSchema.validate(process.env);
-if (!mySqlConfigErr) {
-  console.error('ENV validation failed:', mySqlConfigErr);
+const app: express.Application = express();
+const uri = process.env.DB_URL;
+if (uri) {
+  connectToDb(uri);
+} else {
+  console.error('DB URI IS MISSING');
   process.exit(1);
 }
-const dbConnectionOpts = {
-  host: process.env.DB_HOST,
-  password: process.env.MYSQL_ROOT_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-  user: process.env.MYSQL_USER,
-  port: Number(process.env.DB_PORT) || 3306,
-} as ConnectionOptions;
-
-const app: express.Application = express();
-
-connectToDb(dbConnectionOpts);
 
 app.use(httpLogger);
 app.use(express.json());
