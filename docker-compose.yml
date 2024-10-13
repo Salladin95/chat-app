@@ -1,0 +1,26 @@
+version: '3.8'
+
+volumes:
+  dbdata:
+    driver: local
+  app:
+
+networks:
+  net:
+    driver: bridge
+
+services:
+  db:
+    build: ./db
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  # Пароль для пользователя root
+      MYSQL_DATABASE: ${MYSQL_DATABASE}            # Имя базы данных
+      MYSQL_USER: ${MYSQL_USER}                    # Пользователь MySQL
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}            # Пароль для пользователя
+    volumes:
+      - dbdata:/var/lib/mysql    # Монтируем папку для хранения данных MySQL
+    networks:
+      - net
+    restart: always
