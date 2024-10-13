@@ -6,6 +6,4 @@ const stream: StreamOptions = {
 };
 
 // Build the morgan middleware
-const morganMiddleware = morgan('combined', { stream: stream });
-
-export default morganMiddleware;
+export const httpLogger = morgan('combined', { stream: stream });

@@ -1,16 +1,42 @@
-import createError from 'http-errors';
-import express from 'express';
+import Joi from 'joi';
 import path from 'path';
-import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser';
 import http from 'http';
+import dotenv from 'dotenv';
+import express from 'express';
+import createError from 'http-errors';
+import cookieParser from 'cookie-parser';
+
+import router from './routes';
+import { handleError } from './helpers';
+import { httpLogger } from './middlewares';
+import { ConnectionOptions, connectToDb } from './utils';
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
-import { handleError } from './helpers/error';
-import httpLogger from './middlewares/httpLogger';
-import router from './routes/index';
+
+export const mySqlConfigSchema = Joi.object({
+  DB_HOST: Joi.string().required(),
+  MYSQL_ROOT_PASSWORD: Joi.string().required(),
+  MYSQL_DATABASE: Joi.string().required(),
+  MYSQL_USER: Joi.string().required(),
+  DB_PORT: Joi.string().required(),
+});
+
+const { error: mySqlConfigErr } = mySqlConfigSchema.validate(process.env);
+if (!mySqlConfigErr) {
+  console.error('ENV validation failed:', mySqlConfigErr);
+  process.exit(1);
+}
+const dbConnectionOpts = {
+  host: process.env.DB_HOST,
+  password: process.env.MYSQL_ROOT_PASSWORD,
+  database: process.env.MYSQL_DATABASE,
+  user: process.env.MYSQL_USER,
+  port: Number(process.env.DB_PORT) || 3306,
+} as ConnectionOptions;
 
 const app: express.Application = express();
+
+connectToDb(dbConnectionOpts);
 
 app.use(httpLogger);
 app.use(express.json());
@@ -23,6 +49,9 @@ app.use('/', router);
 app.use((_req, _res, next) => {
   next(createError(404));
 });
+
+// Теперь любой файл, загруженный в директорию uploads, будет доступен по URL, например, http://localhost:3000/uploads/avatars/filename.jpg
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // error handler
 const errorHandler: express.ErrorRequestHandler = (err, _req, res) => {
