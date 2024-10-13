@@ -6,7 +6,7 @@ import express from 'express';
 // Настраиваем директорию для сохранения аватаров
 const storage = multer.diskStorage({
   destination: async (_req, _file, cb) => {
-    const dir = 'uploads/avatars/';
+    const dir = 'uploads/pics/';
     try {
       // Проверяем, существует ли директория
       await fs.access(dir);

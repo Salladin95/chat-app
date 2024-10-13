@@ -140,4 +140,4 @@ dist
 *.sln
 *.sw?
 
-api/uploads/avatars/*
+api/uploads/pics/*

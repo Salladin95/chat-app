@@ -50,7 +50,7 @@ app.use((_req, _res, next) => {
   next(createError(404));
 });
 
-// Теперь любой файл, загруженный в директорию uploads, будет доступен по URL, например, http://localhost:3000/uploads/avatars/filename.jpg
+// Теперь любой файл, загруженный в директорию uploads, будет доступен по URL, например, http://localhost:3000/uploads/pics/filename.jpg
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // error handler
