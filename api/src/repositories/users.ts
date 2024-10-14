@@ -8,27 +8,27 @@ export type CreateUserPayload = {
   avatar?: string;
 };
 
-export function createUserRepo(knexInstance: Knex) {
-  const knex = knexInstance('users');
+// TODO: FIX UUID & RETURN VALUES
 
+export function createUserRepo(knex: Knex) {
   function createUser(payload: CreateUserPayload): Promise<string> {
-    return knex.insert(payload).returning('id');
+    return knex('users').insert(payload).returning('id');
   }
 
   function getUserById(userId: string) {
-    return knex.where({ id: userId }).first();
+    return knex('users').where({ id: userId }).first();
   }
 
   function getUsers() {
-    return knex.select('*');
+    return knex('users').select('*');
   }
 
   function updateUser(userId: string, updatedData: Partial<CreateUserPayload>) {
-    return knex.where({ id: userId }).update(updatedData);
+    return knex('users').where({ id: userId }).update(updatedData);
   }
 
   function deleteUser(userId: string) {
-    return knex.where({ id: userId }).delete();
+    return knex('users').where({ id: userId }).delete();
   }
 
   return {

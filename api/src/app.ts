@@ -5,13 +5,23 @@ import express from 'express';
 import createError from 'http-errors';
 import cookieParser from 'cookie-parser';
 
-import router from './routes';
+import { connectToDb } from './utils';
 import { handleError } from './helpers';
 import { httpLogger } from './middlewares';
+import { router, setupRouter } from './routes/router';
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const app: express.Application = express();
+
+const uri = process.env.DB_URL;
+if (uri) {
+  const db = connectToDb(uri);
+  setupRouter(db);
+} else {
+  console.error('process.env.DB_URL IS MISSING');
+  process.exit(1);
+}
 
 app.use(httpLogger);
 app.use(express.json());
