@@ -1,13 +1,14 @@
+import path from 'path';
 import { promises as fs } from 'fs';
 
 export async function removeFile(filePath?: string) {
-  try {
-    if (filePath) {
-      await fs.unlink(filePath);
-      await fs.unlink(filePath);
+  if (filePath) {
+    const p = path.resolve(filePath);
+    try {
+      await fs.access(p);
+      await fs.unlink(p);
+    } catch (e) {
+      console.error(`Failed to remove file: ${p}`);
     }
-  } catch (e) {
-    console.error(`Failed to remove file: ${filePath}`);
-    throw e;
   }
 }

@@ -24,7 +24,6 @@ const updateUserSchema = Joi.object({
 // Middleware для валидации
 export async function createUserValidationMid(req: express.Request, res: express.Response, next: express.NextFunction) {
   const { error } = createUserSchema.validate({ ...req.body, avatar: req.file?.path });
-  console.log(JSON.stringify(req.body));
   if (error) {
     // Delete the uploaded file if validation fails
     removeFile(req.file?.path);

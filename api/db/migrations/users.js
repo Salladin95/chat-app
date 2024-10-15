@@ -2,7 +2,7 @@ exports.up = function (knex) {
   return knex.schema.hasTable('users').then((exists) => {
     if (!exists) {
       return knex.schema.createTable('users', (table) => {
-        table.uuid('id').primary().defaultTo(knex.raw('(UUID())'));
+        table.increments('id').primary();
         table.string('username').notNullable();
         table.string('password').notNullable();
         table.string('avatar');

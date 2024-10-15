@@ -9,9 +9,11 @@ export function createUserHandlers(repo: UserRepo) {
   async function signUp(request: express.Request, res: express.Response) {
     try {
       const { repeatPassword: _repeatPassword, ...dto } = request.body;
-      const result = await repo.createUser({ ...dto, avatar: request.file?.path || null });
+      const user = await repo.getUserByEmail(dto.email);
+      if (user) return res.status(400).json({ message: `User with email - ${dto.email} already exists` });
+      const [id] = await repo.createUser({ ...dto, avatar: request.file?.path || null });
 
-      res.status(201).json({ result });
+      res.status(201).json({ id });
     } catch (error) {
       console.error('Error during signup:', error.message);
       // Delete the uploaded file if validation fails
@@ -51,7 +53,7 @@ export function createUserHandlers(repo: UserRepo) {
 
       // Обновляем данные пользователя
       const result = await repo.updateUser(id, dto);
-      res.status(200).json({ result });
+      res.status(200).json({ id: result });
     } catch (error) {
       console.error('Error during updating user:', error.message);
       res.status(500).json({ message: 'Internal server error' });

@@ -19,6 +19,10 @@ export function createUserRepo(knex: Knex) {
     return knex('users').where({ id: userId }).first();
   }
 
+  function getUserByEmail(email: string) {
+    return knex('users').where({ email }).first();
+  }
+
   function getUsers() {
     return knex('users').select('*');
   }
@@ -34,6 +38,7 @@ export function createUserRepo(knex: Knex) {
   return {
     createUser,
     getUserById,
+    getUserByEmail,
     getUsers,
     updateUser,
     deleteUser,
