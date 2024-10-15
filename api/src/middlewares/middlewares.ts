@@ -1,9 +1,9 @@
 import Joi from 'joi';
 import express from 'express';
 import { validate as validateUUID } from 'uuid';
+import { BadRequestException } from '../helpers';
 import { removeFile } from '../utils/removeFile';
 
-// Валидация данных пользователя
 const createUserSchema = Joi.object({
   username: Joi.string().min(1).required(),
   password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
@@ -12,7 +12,17 @@ const createUserSchema = Joi.object({
   avatar: Joi.string().optional(),
 }).with('password', 'repeatPassword');
 
-// Валидация данных пользователя
+export async function createUserValidationMid(req: express.Request, _res: express.Response, next: express.NextFunction) {
+  const { error } = createUserSchema.validate({ ...req.body, avatar: req.file?.path });
+  if (error) {
+    // Delete the uploaded file if validation fails
+    removeFile(req.file?.path);
+    return next(BadRequestException(error.details[0].message));
+  }
+
+  next();
+}
+
 const updateUserSchema = Joi.object({
   username: Joi.string().min(1),
   password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
@@ -21,34 +31,35 @@ const updateUserSchema = Joi.object({
   avatar: Joi.string(),
 }).with('password', 'repeatPassword');
 
-// Middleware для валидации
-export async function createUserValidationMid(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const { error } = createUserSchema.validate({ ...req.body, avatar: req.file?.path });
-  if (error) {
-    // Delete the uploaded file if validation fails
-    removeFile(req.file?.path);
-    return res.status(400).json({ message: error.details[0].message });
-  }
-
-  next();
-}
-
-// Middleware для валидации
-export function updateUserValidationMid(req: express.Request, res: express.Response, next: express.NextFunction) {
+export function updateUserValidationMid(req: express.Request, _res: express.Response, next: express.NextFunction) {
   const { error } = updateUserSchema.validate({ ...req.body, avatar: req.file?.path });
 
   if (error) {
-    return res.status(400).json({ message: error.details[0].message });
+    return next(BadRequestException(error.details[0].message));
   }
 
   next();
 }
 
-// Middleware для валидации
-export function validateUUIDMid(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const err = validateUUID(req.params.id);
-  if (err) {
-    return res.status(400).json({ message: 'id must be UUID' });
+const signInSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
+});
+
+export function signInValidationMid(req: express.Request, _res: express.Response, next: express.NextFunction) {
+  const { error } = signInSchema.validate(req.body);
+
+  if (error) {
+    return next(BadRequestException(error.details[0].message));
+  }
+
+  next();
+}
+
+export function validateUUIDMid(req: express.Request, _res: express.Response, next: express.NextFunction) {
+  const error = validateUUID(req.params.id);
+  if (error) {
+    return next(BadRequestException('id must be UUID'));
   }
   next();
 }

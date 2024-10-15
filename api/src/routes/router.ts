@@ -1,9 +1,9 @@
+import { Knex } from 'knex';
 import express from 'express';
 import { upload } from '../utils';
 import { createUserHandlers } from '../handlers';
 import { createUserRepo } from '../repositories';
-import { createUserValidationMid, updateUserValidationMid, validateUUIDMid } from '../middlewares';
-import { Knex } from 'knex';
+import { checkUserId, createUserValidationMid, isAdminMiddleware, signInValidationMid, updateUserValidationMid, verifyToken } from '../middlewares';
 
 const router = express.Router();
 
@@ -15,10 +15,13 @@ function setupRouter(db: Knex) {
   const userHandlers = createUserHandlers(userRepo);
 
   router.post('/sign-up', upload.single('avatar'), createUserValidationMid, userHandlers.signUp);
-  router.patch('/user/:id', upload.single('avatar'), updateUserValidationMid, userHandlers.updateUser);
-  router.get('/user', userHandlers.getUsers);
-  router.get('/user/:id', validateUUIDMid, userHandlers.getUser);
-  router.delete('/user/:id', validateUUIDMid, userHandlers.deleteUser);
+  router.post('/sign-in', signInValidationMid, userHandlers.signIn);
+
+  router.get('/user', isAdminMiddleware(userRepo), userHandlers.getUsers);
+
+  router.patch('/user/:userId', verifyToken, upload.single('avatar'), updateUserValidationMid, userHandlers.updateUser);
+  router.get('/user/:userId', checkUserId, userHandlers.getUser);
+  router.delete('/user/:userId', verifyToken, userHandlers.deleteUser);
 }
 
 export { router, setupRouter };

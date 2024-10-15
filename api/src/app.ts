@@ -1,25 +1,21 @@
 import path from 'path';
 import http from 'http';
-import dotenv from 'dotenv';
 import express from 'express';
 import createError from 'http-errors';
 import cookieParser from 'cookie-parser';
 
 import { connectToDb } from './utils';
-import { handleError } from './helpers';
 import { httpLogger } from './middlewares';
-import { router, setupRouter } from './routes/router';
-
-dotenv.config({ path: path.join(__dirname, '../.env') });
+import { router, setupRouter } from './routes';
+import { appConf, handleError } from './helpers';
 
 const app: express.Application = express();
 
-const uri = process.env.DB_URL;
-if (uri) {
-  const db = connectToDb(uri);
+if (appConf.dbURI) {
+  const db = connectToDb(appConf.dbURI);
   setupRouter(db);
 } else {
-  console.error('process.env.DB_URL IS MISSING');
+  console.error('Database URI IS MISSING');
   process.exit(1);
 }
 
@@ -39,12 +35,12 @@ app.use((_req, _res, next) => {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // error handler
-const errorHandler: express.ErrorRequestHandler = (err, _req, res) => {
+const errorHandler: express.ErrorRequestHandler = (err, _req, res, _next) => {
   handleError(err, res);
 };
 app.use(errorHandler);
 
-const port = process.env.PORT || '8000';
+const port = appConf.port || '8000';
 app.set('port', port);
 
 const server = http.createServer(app);
