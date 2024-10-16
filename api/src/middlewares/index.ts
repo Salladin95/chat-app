@@ -3,3 +3,4 @@ export * from './middlewares';
 export * from './checkUserId';
 export * from './authMiddleware';
 export * from './isAdminMiddleware';
+export * from './userDtoValidationMiddlewares';

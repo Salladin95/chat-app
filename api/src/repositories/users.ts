@@ -8,8 +8,6 @@ export type CreateUserPayload = {
   avatar?: string;
 };
 
-// TODO: FIX UUID & RETURN VALUES
-
 export function createUserRepo(knex: Knex) {
   function createUser(payload: CreateUserPayload): Promise<string> {
     return knex('users').insert(payload).returning('id');
